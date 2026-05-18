@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>POS Drawer Test</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 4px;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      font-size: 0.82rem;
+      color: #64748b;
+      margin-bottom: 28px;
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: #1e2330;
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 20px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      color: #64748b;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .tab.active {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    /* Panel */
+    .panel {
+      display: none;
+      background: #1e2330;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .panel.active { display: block; }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+
+    select, input {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3748;
+      border-radius: 8px;
+      color: #e2e8f0;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    select:focus, input:focus { border-color: #2563eb; }
+
+    .row { display: flex; gap: 12px; }
+    .row > div { flex: 1; }
+
+    /* Drawer command config */
+    .cmd-config {
+      background: #0f1117;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 14px;
+    }
+
+    .cmd-config label {
+      margin-bottom: 8px;
+      color: #475569;
+    }
+
+    .cmd-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .byte-badge {
+      background: #1e2330;
+      border: 1px solid #2d3748;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-family: monospace;
+      color: #7dd3fc;
+    }
+
+    .pin-select {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .pin-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid #2d3748;
+      background: #0f1117;
+      color: #94a3b8;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+
+    .pin-btn.active {
+      border-color: #2563eb;
+      color: #7dd3fc;
+      background: #1e3a5f;
+    }
+
+    /* Buttons */
+    .btn-open {
+      width: 100%;
+      padding: 14px;
+      background: #16a34a;
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-open:hover { background: #15803d; }
+    .btn-open:active { transform: scale(0.98); }
+    .btn-open:disabled { background: #1f4731; color: #4b7a5f; cursor: not-allowed; transform: none; }
+
+    .btn-connect {
+      width: 100%;
+      padding: 10px;
+      background: #1e3a5f;
+      border: 1px solid #2563eb;
+      border-radius: 8px;
+      color: #7dd3fc;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 14px;
+      transition: all 0.15s;
+    }
+
+    .btn-connect:hover { background: #1d4ed8; color: #fff; }
+    .btn-connect.connected { background: #14532d; border-color: #16a34a; color: #4ade80; }
+
+    /* Status */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: #1e2330;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 0.82rem;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #475569;
+      flex-shrink: 0;
+    }
+
+    .dot.ok { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+    .dot.error { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+    .dot.busy { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; animation: pulse 1s infinite; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* Log */
+    .log {
+      background: #0a0e18;
+      border: 1px solid #1e2330;
+      border-radius: 8px;
+      padding: 12px;
+      height: 140px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: #475569;
+    }
+
+    .log-entry { line-height: 1.6; }
+    .log-entry.ok { color: #4ade80; }
+    .log-entry.error { color: #f87171; }
+    .log-entry.info { color: #7dd3fc; }
+    .log-label { color: #334155; margin-right: 6px; }
+
+    /* Drawer animation */
+    .drawer-visual {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .drawer-box {
+      position: relative;
+      width: 120px;
+      height: 70px;
+    }
+
+    .drawer-body {
+      width: 120px;
+      height: 60px;
+      background: #1e2330;
+      border: 2px solid #334155;
+      border-radius: 6px;
+      position: absolute;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .drawer-handle {
+      width: 32px;
+      height: 6px;
+      background: #475569;
+      border-radius: 3px;
+    }
+
+    .drawer-slide {
+      width: 100px;
+      height: 52px;
+      background: #131820;
+      border: 1px solid #2d3748;
+      border-radius: 4px;
+      position: absolute;
+      bottom: 4px;
+      left: 50%;
+      transform: translateX(-50%);
+      transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .drawer-slide.open {
+      transform: translateX(-50%) translateY(-36px);
+    }
+
+    .info-note {
+      font-size: 0.75rem;
+      color: #475569;
+      background: #0f1117;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .info-note span { color: #7dd3fc; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="drawer-visual">
+    <div class="drawer-box">
+      <div class="drawer-slide" id="drawerSlide"></div>
+      <div class="drawer-body"><div class="drawer-handle"></div></div>
+    </div>
+  </div>
+
+  <h1>POS Drawer Test</h1>
+  <p class="subtitle">ทดสอบเปิดลิ้นชักเงิน (RJ11 ผ่านเครื่องพิมพ์ใบเสร็จ)</p>
+
+  <!-- Status -->
+  <div class="status-bar">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusText">ยังไม่ได้เชื่อมต่อ</span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('serial')">Serial / COM</button>
+    <button class="tab" onclick="switchTab('usb')">USB Printer</button>
+    <button class="tab" onclick="switchTab('network')">Network (IP)</button>
+  </div>
+
+  <!-- Serial Panel -->
+  <div class="panel active" id="panel-serial">
+    <div class="info-note">
+      ใช้ <span>Web Serial API</span> (Chrome/Edge เท่านั้น) — เครื่องพิมพ์เชื่อมต่อผ่าน COM Port หรือ USB-to-Serial
+    </div>
+
+    <label>Baud Rate</label>
+    <select id="serialBaud">
+      <option value="9600">9600</option>
+      <option value="19200">19200</option>
+      <option value="38400">38400</option>
+      <option value="115200" selected>115200</option>
+    </select>
+
+    <button class="btn-connect" id="serialConnectBtn" onclick="serialConnect()">เชื่อมต่อ Serial Port</button>
+  </div>
+
+  <!-- USB Panel -->
+  <div class="panel" id="panel-usb">
+    <div class="info-note">
+      ใช้ <span>WebUSB API</span> (Chrome/Edge เท่านั้น) — เลือก USB printer โดยตรง
+    </div>
+    <button class="btn-connect" id="usbConnectBtn" onclick="usbConnect()">เลือก USB Printer</button>
+  </div>
+
+  <!-- Network Panel -->
+  <div class="panel" id="panel-network">
+    <div class="info-note">
+      ต้องใช้ <span>proxy server</span> ด้านล่าง — browser ไม่สามารถเปิด TCP socket ตรงได้<br>
+      รัน: <span>node proxy.js</span> แล้วใส่ IP เครื่องพิมพ์
+    </div>
+    <div class="row">
+      <div>
+        <label>IP เครื่องพิมพ์</label>
+        <input id="netIp" type="text" placeholder="192.168.1.100" value="192.168.1.100">
+      </div>
+      <div>
+        <label>Port</label>
+        <input id="netPort" type="number" placeholder="9100" value="9100" style="margin-bottom:14px">
+      </div>
+    </div>
+    <label>WebSocket Proxy URL</label>
+    <input id="proxyUrl" type="text" placeholder="ws://localhost:8765" value="ws://localhost:8765">
+    <button class="btn-connect" id="netConnectBtn" onclick="netConnect()">เชื่อมต่อผ่าน Proxy</button>
+  </div>
+
+  <!-- ESC/POS Config -->
+  <div style="background:#1e2330;border-radius:12px;padding:20px;margin-bottom:16px;">
+    <label style="margin-bottom:10px;">PIN เปิด Drawer (RJ11)</label>
+    <div class="pin-select">
+      <button class="pin-btn active" id="pin2btn" onclick="setPin(2)">Pin 2 (ทั่วไป)</button>
+      <button class="pin-btn" id="pin5btn" onclick="setPin(5)">Pin 5</button>
+    </div>
+
+    <div class="cmd-config">
+      <label>ESC/POS Command ที่จะส่ง</label>
+      <div class="cmd-row" id="cmdDisplay">
+        <span class="byte-badge">ESC (1B)</span>
+        <span class="byte-badge">p (70)</span>
+        <span class="byte-badge">00</span>
+        <span class="byte-badge">19</span>
+        <span class="byte-badge">FA</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Open Button -->
+  <button class="btn-open" id="openBtn" onclick="openDrawer()" disabled>
+    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+    </svg>
+    เปิด Drawer
+  </button>
+
+  <!-- Log -->
+  <div class="log" id="log" style="margin-top:16px;">
+    <div class="log-entry info"><span class="log-label">[SYS]</span>พร้อมใช้งาน — เลือก connection method และกด เชื่อมต่อ</div>
+  </div>
+</div>
+
+<script>
+  let currentTab = 'serial';
+  let serialPort = null;
+  let usbDevice = null;
+  let wsConn = null;
+  let drawerPin = 2;
+
+  // --- ESC/POS ---
+  function getDrawerCmd(pin) {
+    // ESC p m t1 t2
+    return new Uint8Array([0x1B, 0x70, pin === 2 ? 0x00 : 0x01, 0x19, 0xFA]);
+  }
+
+  function setPin(pin) {
+    drawerPin = pin;
+    document.getElementById('pin2btn').classList.toggle('active', pin === 2);
+    document.getElementById('pin5btn').classList.toggle('active', pin === 5);
+    const m = pin === 2 ? '00' : '01';
+    document.getElementById('cmdDisplay').innerHTML = `
+      <span class="byte-badge">ESC (1B)</span>
+      <span class="byte-badge">p (70)</span>
+      <span class="byte-badge">${m}</span>
+      <span class="byte-badge">19</span>
+      <span class="byte-badge">FA</span>`;
+  }
+
+  // --- Tabs ---
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', ['serial','usb','network'][i] === tab);
+    });
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + tab).classList.add('active');
+  }
+
+  // --- Status ---
+  function setStatus(state, text) {
+    const dot = document.getElementById('statusDot');
+    dot.className = 'dot ' + (state || '');
+    document.getElementById('statusText').textContent = text;
+    document.getElementById('openBtn').disabled = state !== 'ok';
+  }
+
+  function log(msg, type = '') {
+    const el = document.createElement('div');
+    el.className = 'log-entry ' + type;
+    const now = new Date().toLocaleTimeString('th-TH');
+    el.innerHTML = `<span class="log-label">[${now}]</span>${msg}`;
+    const box = document.getElementById('log');
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // --- Drawer animation ---
+  function animateDrawer() {
+    const s = document.getElementById('drawerSlide');
+    s.classList.add('open');
+    setTimeout(() => s.classList.remove('open'), 1200);
+  }
+
+  // --- Serial ---
+  async function serialConnect() {
+    if (!('serial' in navigator)) {
+      log('Browser ไม่รองรับ Web Serial API — ใช้ Chrome/Edge', 'error');
+      return;
+    }
+    if (serialPort) {
+      await serialPort.close();
+      serialPort = null;
+      document.getElementById('serialConnectBtn').classList.remove('connected');
+      document.getElementById('serialConnectBtn').textContent = 'เชื่อมต่อ Serial Port';
+      setStatus('', 'ยกเลิกการเชื่อมต่อ Serial');
+      log('ยกเลิกการเชื่อมต่อ Serial', 'info');
+      return;
+    }
+    try {
+      setStatus('busy', 'กำลังเชื่อมต่อ...');
+      serialPort = await navigator.serial.requestPort();
+      await serialPort.open({ baudRate: parseInt(document.getElementById('serialBaud').value) });
+      setStatus('ok', 'เชื่อมต่อ Serial สำเร็จ');
+      log('Serial เชื่อมต่อสำเร็จ', 'ok');
+      document.getElementById('serialConnectBtn').classList.add('connected');
+      document.getElementById('serialConnectBtn').textContent = 'ยกเลิกการเชื่อมต่อ';
+    } catch (e) {
+      serialPort = null;
+      setStatus('error', 'เชื่อมต่อไม่สำเร็จ');
+      log('Serial error: ' + e.message, 'error');
+    }
+  }
+
+  // --- USB ---
+  async function usbConnect() {
+    if (!('usb' in navigator)) {
+      log('Browser ไม่รองรับ WebUSB — ใช้ Chrome/Edge', 'error');
+      return;
+    }
+    if (usbDevice) {
+      await usbDevice.close();
+      usbDevice = null;
+      document.getElementById('usbConnectBtn').classList.remove('connected');
+      document.getElementById('usbConnectBtn').textContent = 'เลือก USB Printer';
+      setStatus('', 'ยกเลิกการเชื่อมต่อ USB');
+      log('ยกเลิกการเชื่อมต่อ USB', 'info');
+      return;
+    }
+    try {
+      setStatus('busy', 'รอเลือกอุปกรณ์...');
+      usbDevice = await navigator.usb.requestDevice({ filters: [] });
+      await usbDevice.open();
+      if (usbDevice.configuration === null) await usbDevice.selectConfiguration(1);
+      // Try to claim interface 0
+      let claimed = false;
+      for (let i = 0; i < usbDevice.configuration.interfaces.length; i++) {
+        try {
+          await usbDevice.claimInterface(i);
+          claimed = true;
+          break;
+        } catch (_) {}
+      }
+      if (!claimed) throw new Error('ไม่สามารถ claim interface ได้');
+      setStatus('ok', `USB: ${usbDevice.productName || 'Printer'}`);
+      log(`USB เชื่อมต่อ: ${usbDevice.productName} (${usbDevice.vendorId.toString(16)}:${usbDevice.productId.toString(16)})`, 'ok');
+      document.getElementById('usbConnectBtn').classList.add('connected');
+      document.getElementById('usbConnectBtn').textContent = 'ยกเลิกการเชื่อมต่อ';
+    } catch (e) {
+      usbDevice = null;
+      setStatus('error', 'USB เชื่อมต่อไม่สำเร็จ');
+      log('USB error: ' + e.message, 'error');
+    }
+  }
+
+  // --- Network (WebSocket proxy) ---
+  function netConnect() {
+    if (wsConn && wsConn.readyState === WebSocket.OPEN) {
+      wsConn.close();
+      return;
+    }
+    const url = document.getElementById('proxyUrl').value;
+    setStatus('busy', 'กำลังเชื่อมต่อ Proxy...');
+    try {
+      wsConn = new WebSocket(url);
+      wsConn.onopen = () => {
+        setStatus('ok', 'Proxy เชื่อมต่อสำเร็จ');
+        log('WebSocket proxy เชื่อมต่อที่ ' + url, 'ok');
+        document.getElementById('netConnectBtn').classList.add('connected');
+        document.getElementById('netConnectBtn').textContent = 'ยกเลิกการเชื่อมต่อ';
+      };
+      wsConn.onerror = () => {
+        setStatus('error', 'Proxy เชื่อมต่อไม่สำเร็จ');
+        log('WebSocket error — ตรวจสอบว่า proxy.js กำลังรันอยู่', 'error');
+      };
+      wsConn.onclose = () => {
+        setStatus('', 'ยกเลิกการเชื่อมต่อ');
+        document.getElementById('netConnectBtn').classList.remove('connected');
+        document.getElementById('netConnectBtn').textContent = 'เชื่อมต่อผ่าน Proxy';
+        log('WebSocket ปิดการเชื่อมต่อ', 'info');
+      };
+    } catch (e) {
+      setStatus('error', 'URL ไม่ถูกต้อง');
+      log('WebSocket error: ' + e.message, 'error');
+    }
+  }
+
+  // --- Open Drawer ---
+  async function openDrawer() {
+    const cmd = getDrawerCmd(drawerPin);
+    log(`ส่ง command: ESC p ${drawerPin === 2 ? '00' : '01'} 19 FA (pin ${drawerPin})`, 'info');
+    animateDrawer();
+
+    try {
+      if (currentTab === 'serial' && serialPort) {
+        const writer = serialPort.writable.getWriter();
+        await writer.write(cmd);
+        writer.releaseLock();
+        log('ส่งคำสั่งผ่าน Serial สำเร็จ ✓', 'ok');
+      } else if (currentTab === 'usb' && usbDevice) {
+        // Find bulk OUT endpoint
+        let epOut = null;
+        for (const iface of usbDevice.configuration.interfaces) {
+          for (const alt of iface.alternates) {
+            for (const ep of alt.endpoints) {
+              if (ep.direction === 'out' && ep.type === 'bulk') epOut = ep;
+            }
+          }
+        }
+        if (!epOut) throw new Error('ไม่พบ bulk OUT endpoint');
+        await usbDevice.transferOut(epOut.endpointNumber, cmd);
+        log('ส่งคำสั่งผ่าน USB สำเร็จ ✓', 'ok');
+      } else if (currentTab === 'network' && wsConn && wsConn.readyState === WebSocket.OPEN) {
+        const ip = document.getElementById('netIp').value;
+        const port = document.getElementById('netPort').value;
+        wsConn.send(JSON.stringify({ ip, port: parseInt(port), data: Array.from(cmd) }));
+        log(`ส่งคำสั่งผ่าน Network (${ip}:${port}) สำเร็จ ✓`, 'ok');
+      } else {
+        log('ยังไม่ได้เชื่อมต่อ', 'error');
+        return;
+      }
+    } catch (e) {
+      log('ส่งคำสั่งล้มเหลว: ' + e.message, 'error');
+    }
+  }
+</script>
+</body>
+</html>

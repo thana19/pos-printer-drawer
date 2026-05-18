@@ -2,7 +2,7 @@
 
 เว็บแอปทดสอบเปิดลิ้นชักเงิน (Cash Drawer) สำหรับเครื่อง POS ที่เชื่อมต่อผ่าน RJ11 กับเครื่องพิมพ์ใบเสร็จ
 
-**Live Demo:** https://pos-drawer.pages.dev
+**Live Demo:** https://pos-drawer.thana.in.th
 
 ---
 
@@ -87,3 +87,5 @@ npm install -g wrangler
 # Deploy
 wrangler pages deploy . --project-name pos-drawer
 ```
+
+Custom domain: `pos-drawer.thana.in.th` → CNAME → `pos-drawer.pages.dev` (Proxied)
